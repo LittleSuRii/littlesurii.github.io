@@ -35,7 +35,10 @@ Last modified:
 ![Azure Monitor Agent](https://littlesurii.github.io/imgs/sentinel/sentinel_ama_status.png)
 
 ## 2. Logs
-解决完了服务器的AMA问题，接下来再看日志怎样导入到Sentinel。导入之前需要创建Log Analytics Workspace，然后再建立一个Sentinel。当然你在创建一个Sentinel过程中微软会要求你创建一个Log Analytics Workspace，所以直接点Sentinel->Create即可。  
+解决完了服务器的AMA问题，接下来就是将日志导入到Sentinel。导入之前需要创建Log Analytics Workspace，然后再建立一个Sentinel工作区。当然你在创建一个Sentinel工作区时微软会要求你创建一个Log Analytics Workspace，所以直接点Sentinel->Create即可。  
 #### Sentinel creation Snapshot
-![Sentinel](https://littlesurii.github.io/imgs/sentinel/sentinel_creation.png)
+![Sentinel](https://littlesurii.github.io/imgs/sentinel/sentinel_creation.png)  
 ### 2.1 Syslog
+如果想要将当前VM的Syslog导入至Sentinel中，可以通过创建Data Collection Rules，选择你的data source来自于哪个VM后再将Data source设置为Syslog即可。
+![Syslog](https://littlesurii.github.io/imgs/sentinel/sentinel_log_source.png)
+### 2.2 Custom Logs
