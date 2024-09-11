@@ -16,7 +16,9 @@ layout: default
 1. Microsoft Sentinel  
   (待更新)
 
-2. Splunk Enterprise Security
+2. Splunk Enterprise Security  
+  (待更新)
 
-3. Splunk SOAR
+3. Splunk SOAR  
+  (待更新)
 
