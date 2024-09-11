@@ -44,7 +44,7 @@ Last modified:
 ### 2.2 Custom Logs
 Custom logs通常只有两种形式可以被Sentinel识别接收，聪明的你在创建Data Collection Rules时就发现了是哪两种。由于Sentinel并不像Splunk一样拥有自动识别日志field的功能，所以对于文字(Text)形式记录的日志通常要给各个分段添加命名，且必须有一个TimeGenerated的项目，故在解析Text形式的日志或Json日志时并不如Splunk那样直接，简单且方便。  
 #### 2.2.1 Text Logs
-假设在当前设备上你有 sample.log 置于 /home/azureuser 目录下，且其内容如下(数据来源于网络):  
+假设在当前设备上你有 sample.log 置于 /home/azureuser 目录下且其内容可以被azureuser的权限访问时，假设其内容如下(数据来源于网络):  
 ```
 180.76.6.56 - - [20/Sep/2024:21:05:56 +0000] "GET /robots.txt HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 5.1; rv:6.0.2) Gecko/20100101 Firefox/6.0.2"
 46.105.14.53 - - [20/Sep/2024:21:05:15 +0000] "GET /blog/tags/puppet?flav=rss20 HTTP/1.1" 200 14872 "-" "UniversalFeedParser/4.2-pre-314-svn +http://feedparser.org/"
