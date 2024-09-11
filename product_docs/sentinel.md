@@ -26,4 +26,5 @@ Last modified:
 ### 1.3 Azure Monitor Agent
 安装这个玩意挺邪门的。一般是在建立Data collection rules时会给你的VM装上。如果你的VM在关机时建立了Data collection rules的话那自然是装不上的。  
 此外，正确建立Data collection rules的方法是先建立一个Data collection endpoint，这样你在建立Data Collection rules时则可以直接选择你的Endpoint，而不是在前进到resources时建立一个新的endpoint以后发现没法在第一页里选择endpoint，导致能接收的日志只有设备日志而不是Custom Logs。
+![Data Collection Rules](https://littlesurii.github.io/imgs/sentinel/sentinel_data_collection_rules_creation.png)
 ## 2. 
