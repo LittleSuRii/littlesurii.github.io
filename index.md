@@ -13,7 +13,7 @@ layout: default
 
 ## 环境 or 产品测试
 
-1. Microsoft Sentinel  
+1. [Microsoft Sentinel](./product_docs/sentinel.md)  
   (待更新)
 
 2. Splunk Enterprise Security  
