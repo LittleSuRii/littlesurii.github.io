@@ -42,3 +42,4 @@ Last modified:
 如果想要将当前VM的Syslog导入至Sentinel中，可以通过创建Data Collection Rules，选择你的data source来自于哪个VM后再将Data source设置为Syslog即可。
 ![Syslog](https://littlesurii.github.io/imgs/sentinel/sentinel_log_source.png)
 ### 2.2 Custom Logs
+Custom logs通常只有两种形式可以被Sentinel识别接收。由于Sentinel并不像Splunk一样拥有自动识别日志field的功能，所以对于文字(text)形式记录的日志通常要给各个分段添加命名，且必须有一个TimeGenerated的项目。
