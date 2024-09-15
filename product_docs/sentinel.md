@@ -53,7 +53,7 @@ Custom logs通常只有两种形式可以被Sentinel识别接收, 聪明的你�
 那么对于上述日志搜集, 你可以通过自行创建data collection rules, 或者是使用 azure sentinel content hub 内的 Custom logs via AMA (Preview) 的解决方案来进行。  
 如果是自行创建data collection rules, 你需要在Log Analytics Workspace内先创建一个Table。你可以选择DCR-Based(Data collection rules based, 基于创建数据收集规则)的方式来创建Table, 也可以通过MMA的方式来创建Table。由于MMA方式是基于Legacy Agent的方式来进行收集日志, 故在AMA环境下只能使用DCR来创建。  
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_creation.jpg)
-由于创建时只能选择Json格式的日志文件作为模板, 所以你可以通过GPT来帮你解决Text到Json的过程, 让它随意定义一些field名称, 或者你自己决定这些名称。
+由于创建时只能选择Json格式的日志文件作为模板, 所以你可以通过GPT来帮你解决Text到Json的过程, 让它随意定义一些field名称, 或者你自己在Nginx配置文件中决定这些名称。同时, 你需要修改Nginx配置文件使得该日志以Json格式输出。  
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_settings.jpg)
 但Sentinel只支持[部分](https://learn.microsoft.com/en-us/kusto/query/scalar-data-types/datetime?view=microsoft-fabric)时间格式, 故当前日志的时间格式无法被接受。需要做的只是将它修改成sentinel可以接受的形式, 然后保存。  
 通过Transformation editor来执行KQL语句, 执行找寻, 替代, 以及变换等操作即可。由于我不需要中间值, 所以省略了下文中的date_time_transformed列。
@@ -75,3 +75,8 @@ source
 | extend TimeGenerated = todatetime(date_time_transformed)
 | project TimeGenerated, bytes_sent, client_identd, date_time, extra, ip_address, referer, status, user_agent, user_id
 ```
+上述变换是基于Text格式的日志来进行的, 由于Nginx配置文件修改后可以定义你想要的信息, 比如端口号之类的, 所以请根据你的实际情况来进行调整。  
+也许你会在想:"KQL怎么这么长?不能通过regex来直接一把梭吗?"  
+不能, 因为这不是Splunk。  
+
+然而Custom Json Log处于更新中, 只能使用Azure CLI来导入Json信息而不是通过DCR, 只能说一句狗屎微软。
