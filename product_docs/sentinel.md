@@ -43,40 +43,52 @@ Last modified:
 如果想要将当前VM的Syslog导入至Sentinel中, 可以通过创建Data Collection Rules, 选择你的data source来自于哪个VM后再将Data source设置为Syslog即可。由于Log Analytics Workspace本身就含有Syslog的table, 所以你不需要额外创建一个table来解析日志。
 ![Syslog](https://littlesurii.github.io/imgs/sentinel/sentinel_log_source.png)
 ### 2.2 Custom Logs
-Custom logs通常只有两种形式可以被Sentinel识别接收, 聪明的你在创建Data Collection Rules时就发现了是哪两种。而Sentinel并不像Splunk一样拥有自动识别日志field的功能, 所以对于文字(Text)形式记录的日志通常要给各个分段添加命名, 且必须有一个TimeGenerated的项目(该项目会在微软接收某条日志时自动生成), 故在解析Text形式的日志或Json日志时并不如Splunk那样直接, 简单且方便。
+Custom logs通常只有两种形式可以被Sentinel识别接收, 聪明的你在创建Data Collection Rules时就发现了是哪两种。而Sentinel并不像Splunk一样拥有自动识别日志field的功能, 所以对于文字(Text)形式记录的日志通常要给各个分段添加命名, 且必须有一个TimeGenerated的项目(该项目会在微软接收某条日志时自动生成, 也可以自己选择日志记录的时间转换为该项目), 故在解析Text形式的日志或Json日志时并不如Splunk那样直接, 简单且方便。  
+为了方便测试Sentinel的日志搜集功能，本文采用了Nginx默认配置下生成的访问日志作为数据源。
 #### 2.2.1 Text Logs
 假设你在当前设备下有任意可以读取的日志置于任意目录下, 且其大致内容(Apache/Nginx的日志内容)假设如下:
 ```
 127.0.0.1 - - [14/Sep/2024:15:16:40 +0000] "GET / HTTP/1.1" 200 615 "-" "curl/7.68.0" "-"
 127.0.0.1 - - [14/Sep/2024:15:16:51 +0000] "GET / HTTP/1.1" 200 615 "-" "curl/7.68.0" "-"
 ```
-那么对于上述日志搜集, 你可以通过自行创建data collection rules, 或者是使用 azure sentinel content hub 内的 Custom logs via AMA (Preview) 的解决方案来进行。  
-如果是自行创建data collection rules, 你需要在Log Analytics Workspace内先创建一个Table。你可以选择DCR-Based(Data collection rules based, 基于创建数据收集规则)的方式来创建Table, 也可以通过MMA的方式来创建Table。由于MMA方式是基于Legacy Agent的方式来进行收集日志, 故在AMA环境下只能使用DCR来创建。  
-![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_creation.jpg)
-由于创建时只能选择Json格式的日志文件作为模板, 所以你可以通过GPT来帮你解决Text到Json的过程, 让它随意定义一些field名称, 或者你自己在Nginx配置文件中决定这些名称。同时, 你需要修改Nginx配置文件使得该日志以Json格式输出。  
-![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_settings.jpg)
+那么对于上述日志搜集, 你可以通过自行创建data collection rules, 或者是使用 Azure sentinel content hub 内的 Custom logs via AMA (Preview) 的解决方案来进行(推荐)。在不修改Nginx配置的情况下, 默认日志会以filename.log的名称保存在 /var/log/ngnix/目录下。  
+如果是自行创建data collection rules, 你需要在Log Analytics Workspace内先创建一个Table。你可以选择DCR-Based(Data collection rules based, 基于创建数据收集规则)的方式来创建Table, 也可以通过MMA的方式来创建Table。
+![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_creation.jpg)  
+由于通过DCR创建时只能选择Json格式的日志文件作为模板, 所以你可以通过GPT来帮你解决Text到Json的过程, 让它随意定义一些field名称, 或者你自己在Nginx配置文件中决定这些名称。  
+![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_settings.jpg)  
 但Sentinel只支持[部分](https://learn.microsoft.com/en-us/kusto/query/scalar-data-types/datetime?view=microsoft-fabric)时间格式, 故当前日志的时间格式无法被接受。需要做的只是将它修改成sentinel可以接受的形式, 然后保存。  
-通过Transformation editor来执行KQL语句, 执行找寻, 替代, 以及变换等操作即可。由于我不需要中间值, 所以省略了下文中的date_time_transformed列。
+通过Content hub 内的 Custom logs via AMA (Preview) 的解决方案来一把梭地创建Table获取日志的操作如下:  
+Content Hub -> Install Custom logs via AMA (Preview) -> Data Connector -> Custom logs via AMA (Preview) -> Create Data Collection Rules  
+![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_logs_ama_solution.jpg)  
+在创建Table时你可以选择自定义或者是默认提供给你的Nginx日志的解决方案。  
+![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom logs creation.jpg)  
+而Transform这一栏你可以默认只填一个source, 默认source的情况下你在本地写入的所有日志信息都会以出现在RawData的项目下。也可以通过解析RawData来自行创建一些Field来配合需要储存的项目。例如:  
 ```
 source
-| extend date_time_transformed = replace(@'(\d{2})/(\w{3})/(\d{4}):(\d{2}:\d{2}:\d{2}) \+0000', @"\3-\2-\1T\4Z", date_time)
-| extend date_time_transformed = replace("Jan", "01", date_time_transformed)
-| extend date_time_transformed = replace("Feb", "02", date_time_transformed)
-| extend date_time_transformed = replace("Mar", "03", date_time_transformed)
-| extend date_time_transformed = replace("Apr", "04", date_time_transformed)
-| extend date_time_transformed = replace("May", "05", date_time_transformed)
-| extend date_time_transformed = replace("Jun", "06", date_time_transformed)
-| extend date_time_transformed = replace("Jul", "07", date_time_transformed)
-| extend date_time_transformed = replace("Aug", "08", date_time_transformed)
-| extend date_time_transformed = replace("Sep", "09", date_time_transformed)
-| extend date_time_transformed = replace("Oct", "10", date_time_transformed)
-| extend date_time_transformed = replace("Nov", "11", date_time_transformed)
-| extend date_time_transformed = replace("Dec", "12", date_time_transformed)
-| extend TimeGenerated = todatetime(date_time_transformed)
-| project TimeGenerated, bytes_sent, client_identd, date_time, extra, ip_address, referer, status, user_agent, user_id
+| parse RawData with ip " - - [" date_time: string "] \"" method" "url" "protocol "\" " status:int" "length:int " \"" referrer "\" \"" userAgent "\" \"" _ 
+| extend datetime_transformed = replace(@'(\d{2})/(\w{3})/(\d{4}):(\d{2}:\d{2}:\d{2}) \+0000', @"\3-\2-\1T\4Z", date_time) 
+| extend datetime_transformed = replace("Jan", "01", datetime_transformed) 
+| extend datetime_transformed = replace("Feb", "02", datetime_transformed) 
+| extend datetime_transformed = replace("Mar", "03", datetime_transformed) 
+| extend datetime_transformed = replace("Apr", "04", datetime_transformed) 
+| extend datetime_transformed = replace("May", "05", datetime_transformed) 
+| extend datetime_transformed = replace("Jun", "06", datetime_transformed) 
+| extend datetime_transformed = replace("Jul", "07", datetime_transformed) 
+| extend datetime_transformed = replace("Aug", "08", datetime_transformed) 
+| extend datetime_transformed = replace("Sep", "09", datetime_transformed) 
+| extend datetime_transformed = replace("Oct", "10", datetime_transformed) 
+| extend datetime_transformed = replace("Nov", "11", datetime_transformed) 
+| extend datetime_transformed = replace("Dec", "12", datetime_transformed) 
+| extend datetime_parsed = todatetime(datetime_transformed) 
+| project TimeGenerated, RawData, datetime_parsed, ip, method, url, protocol, status, length, referrer, userAgent
 ```
+经过上述变换后，你还需要添加NGINX_CL的表格项目以达到数据同步保存，这样你就能在日志当中看到信息。  
+![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_table.jpg)  
+![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_log_results.jpg)  
 上述变换是基于Text格式的日志来进行的, 由于Nginx配置文件修改后可以定义你想要的信息, 比如端口号之类的, 所以请根据你的实际情况来进行调整。  
 也许你会在想:"KQL怎么这么长?不能通过regex来直接一把梭吗?"  
 不能, 因为这不是Splunk。  
-
+同时，只有在完成创建Table以及Data Collection Rules后，新写入的日志才会被发送到Azure Monitor中，在这之前生成的日志不会被发送。  
+#### 2.2.2 Custom Logs
 然而Custom Json Log处于更新中, 只能使用Azure CLI来导入Json信息而不是通过DCR, 只能说一句狗屎微软。
+
