@@ -44,7 +44,7 @@ Last modified:
 ![Syslog](https://littlesurii.github.io/imgs/sentinel/sentinel_log_source.png)
 ### 2.2 Custom Logs
 Custom logs通常只有两种形式可以被Sentinel识别接收, 聪明的你在创建Data Collection Rules时就发现了是哪两种。而Sentinel并不像Splunk一样拥有自动识别日志field的功能, 所以对于文字(Text)形式记录的日志通常要给各个分段添加命名, 且必须有一个TimeGenerated的项目(该项目会在微软接收某条日志时自动生成, 也可以自己选择日志记录的时间转换为该项目), 故在解析Text形式的日志或Json日志时并不如Splunk那样直接, 简单且方便。  
-为了方便测试Sentinel的日志搜集功能，本文采用了Nginx默认配置下生成的访问日志作为数据源。
+为了方便测试Sentinel的日志搜集功能, 本文采用了Nginx默认配置下生成的访问日志作为数据源。
 #### 2.2.1 Text Logs
 假设你在当前设备下有任意可以读取的日志置于任意目录下, 且其大致内容(Apache/Nginx的日志内容)假设如下:
 ```
@@ -82,13 +82,13 @@ source
 | extend datetime_parsed = todatetime(datetime_transformed) 
 | project TimeGenerated, RawData, datetime_parsed, ip, method, url, protocol, status, length, referrer, userAgent
 ```
-经过上述变换后，你还需要添加NGINX_CL的表格项目以达到数据同步保存，这样你就能在日志当中看到信息。  
+经过上述变换后, 你还需要添加NGINX_CL的表格项目以达到数据同步保存, 这样你就能在日志当中看到信息。  
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_table.jpg)  
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_log_results.jpg)  
 上述变换是基于Text格式的日志来进行的, 由于Nginx配置文件修改后可以定义你想要的信息, 比如端口号之类的, 所以请根据你的实际情况来进行调整。  
 也许你会在想:"KQL怎么这么长?不能通过regex来直接一把梭吗?"  
 不能, 因为这不是Splunk。  
-同时，只有在完成创建Table以及Data Collection Rules后，新写入的日志才会被发送到Azure Monitor中，在这之前生成的日志不会被发送。  
+同时, 只有在完成创建Table以及Data Collection Rules后, 新写入的日志才会被发送到Azure Monitor中, 在这之前生成的日志不会被发送。  
 #### 2.2.2 Custom Logs
 然而Custom Json Log处于更新中, 只能使用Azure CLI来导入Json信息而不是通过DCR, 只能说一句狗屎微软。
 
