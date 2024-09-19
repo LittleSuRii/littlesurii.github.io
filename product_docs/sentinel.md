@@ -2,7 +2,7 @@
 layout: default
 ---
 Last modified:  
-2024-09-15  
+2024-09-19  
 
 # 为什么记录？
 
@@ -13,6 +13,7 @@ Last modified:
 
 其实只要是只使用软家产品的话, 它/它们通常来讲下限不会很低。  
 但是一旦开始想要把软家的产品和别家的产品绑一起用时, 就会闻到非常奇怪的味道。  
+同时欢迎各位捉虫。  
 
 # 正片
 整理了一下我的思绪, 其实可以通过以下方式来将日志发送到Azure Monitor, 接着Azure Monitor会发送到指定的Log Analytics Workspace, 接着再让Sentinel制作检测规则或结合Data Connectors来让警报自动生成。  
@@ -27,20 +28,21 @@ Last modified:
 ### 1.3 Azure Monitor Agent
 为什么选择AMA而不是Legacy Agent? 因为微软宣布从2024-08-31以后停止支持Legacy Agent。  
 安装这个玩意挺邪门的。一般是在建立Data collection rules时会给你的VM装上。  
-如果你的VM在关机时建立了Data collection rules的话那自然是装不上的。  
+如果你的VM在关机时建立了Data collection rules的话那自然是装不上的(再开机也不会装上)。  
 此外, 正确建立Data collection rules的方法是先建立一个Data collection endpoint, 这样你在建立Data Collection rules时则可以直接选择你的Endpoint, 而不是在前进到resources时建立一个新的endpoint以后发现没法在第一页(Basic)里选择刚刚建立的Endpoint, 导致Data source里可选择的日志只有Linux Syslog或者是Windows日志而不是Custom Logs。安装成功/失败的话可以在VM页面的extensions+applications里看到结果。
-#### Data Collection Rules Snapshot
+#### Data Collection Rules
 ![Data Collection Rules](https://littlesurii.github.io/imgs/sentinel/sentinel_data_collection_rules_creation.png)
 创建该规则时, 你需要注意的是你的日志是什么, 以及你的日志在哪里。
-#### AMA Status Snapshot
+#### AMA Status
 ![Azure Monitor Agent](https://littlesurii.github.io/imgs/sentinel/sentinel_ama_status.png)
 可以从该页面确认AMA是否安装成功。
 ## 2. Logs
 解决完了服务器的AMA问题, 接下来就是将日志导入到Sentinel。导入之前需要创建Log Analytics Workspace, 然后再建立一个Sentinel工作区。当然你在创建一个Sentinel工作区时微软会要求你创建一个Log Analytics Workspace, 所以直接点Sentinel->Create即可。  
-#### Sentinel creation Snapshot
+#### Sentinel creation
 ![Sentinel](https://littlesurii.github.io/imgs/sentinel/sentinel_creation.png)  
 ### 2.1 Syslog
 如果想要将当前VM的Syslog导入至Sentinel中, 可以通过创建Data Collection Rules, 选择你的data source来自于哪个VM后再将Data source设置为Syslog即可。由于Log Analytics Workspace本身就含有Syslog的table, 所以你不需要额外创建一个table来解析日志。
+#### Data collection rules creation
 ![Syslog](https://littlesurii.github.io/imgs/sentinel/sentinel_log_source.png)
 ### 2.2 Custom Logs
 Custom logs通常只有两种形式可以被Sentinel识别接收, 聪明的你在创建Data Collection Rules时就发现了是哪两种。而Sentinel并不像Splunk一样拥有自动识别日志field的功能, 所以对于文字(Text)形式记录的日志通常要给各个分段添加命名, 且必须有一个TimeGenerated的项目(该项目会在微软接收某条日志时自动生成, 也可以自己选择日志记录的时间转换为该项目), 故在解析Text形式的日志或Json日志时并不如Splunk那样直接, 简单且方便。  
@@ -53,14 +55,18 @@ Custom logs通常只有两种形式可以被Sentinel识别接收, 聪明的你�
 ```
 那么对于上述日志搜集, 你可以通过自行创建data collection rules, 或者是使用 Azure sentinel content hub 内的 Custom logs via AMA (Preview) 的解决方案来进行(推荐)。在不修改Nginx配置的情况下, 默认日志会以filename.log的名称保存在 /var/log/ngnix/目录下。  
 如果是自行创建data collection rules, 你需要在Log Analytics Workspace内先创建一个Table。你可以选择DCR-Based(Data collection rules based, 基于创建数据收集规则)的方式来创建Table, 也可以通过MMA的方式来创建Table。
+##### Custom table creation
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_creation.jpg)  
 由于通过DCR创建时只能选择Json格式的日志文件作为模板, 所以你可以通过GPT来帮你解决Text到Json的过程, 让它随意定义一些field名称, 或者你自己在Nginx配置文件中决定这些名称。  
+##### Transformation
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_table_settings.jpg)  
 但Sentinel只支持[部分](https://learn.microsoft.com/en-us/kusto/query/scalar-data-types/datetime?view=microsoft-fabric)时间格式, 故当前日志的时间格式无法被接受。需要做的只是将它修改成sentinel可以接受的形式, 然后保存。  
 通过Content hub 内的 Custom logs via AMA (Preview) 的解决方案来一把梭地创建Table获取日志的操作如下:  
 Content Hub -> Install Custom logs via AMA (Preview) -> Data Connector -> Custom logs via AMA (Preview) -> Create Data Collection Rules  
+##### Data connector
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom_logs_ama_solution.jpg)  
 在创建Table时你可以选择自定义或者是默认提供给你的Nginx日志的解决方案。  
+##### Data collection rules creation in Data connector
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_custom logs creation.jpg)  
 而Transform这一栏你可以默认只填一个source, 默认source的情况下你在本地写入的所有日志信息都会以出现在RawData的项目下。也可以通过解析RawData来自行创建一些Field来配合需要储存的项目。例如:  
 ```
@@ -83,7 +89,9 @@ source
 | project TimeGenerated, RawData, datetime_parsed, ip, method, url, protocol, status, length, referrer, userAgent
 ```
 经过上述变换后, 你还需要添加NGINX_CL的表格项目以达到数据同步保存, 这样你就能在日志当中看到信息。  
+##### Table settings
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_table.jpg)  
+##### Logs
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_log_results.jpg)  
 上述变换是基于Text格式的日志来进行的, 由于Nginx配置文件修改后可以定义你想要的信息, 比如端口号之类的, 所以请根据你的实际情况来进行调整。  
 也许你会在想:"KQL怎么这么长?不能通过regex来直接一把梭吗?"  
