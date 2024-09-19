@@ -94,9 +94,9 @@ source
 ##### Logs
 ![Table](https://littlesurii.github.io/imgs/sentinel/sentinel_nginx_log_results.jpg)  
 上述变换是基于Text格式的日志来进行的, 由于Nginx配置文件修改后可以定义你想要的信息, 比如端口号之类的, 所以请根据你的实际情况来进行调整。  
-也许你会在想:"KQL怎么这么长?不能通过regex来直接一把梭吗?"  
+也许你会在想:“KQL怎么这么长?不能通过regex来直接一把梭吗?”  
 不能, 因为这不是Splunk。  
 同时, 只有在完成创建Table以及Data Collection Rules后, 新写入的日志才会被发送到Azure Monitor中, 在这之前生成的日志不会被发送。  
 #### 2.2.2 Custom Logs
-然而Custom Json Log处于更新中, 只能使用Azure CLI来导入Json信息而不是通过DCR, 只能说一句狗屎微软。
+然而Custom Json Log处于更新中, 只能使用Azure CLI来导入Json信息而不是通过DCR, 只能说一句狗屎微软(Azure CLI真不熟)。
 
