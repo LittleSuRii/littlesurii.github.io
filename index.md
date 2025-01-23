@@ -24,5 +24,5 @@ layout: default
 
 ## CTF(s)
 
-1. [pwn.college](./CTFs/yellowbelt.md)
-
+1. [pwn.college - yellow belt](./CTFs/yellowbelt.md)
+2. [pwn.college - green belt](./CTFs/greenbelt.md)
