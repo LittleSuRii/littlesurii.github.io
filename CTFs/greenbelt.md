@@ -17,7 +17,7 @@ Live Session 2以及 [2024.11.07](https://www.youtube.com/watch?v=Qp6cdnkZXWQ&ab
 ## Race Conditions lvl9-11
 
 卡得比较久的是lvl9.1以及lvl10.1。这两道题的核心在于如何创建共享内存信息的子进程。没想到在B站找到了[救命视频](https://www.bilibili.com/video/BV1dc411i7Cs)。  
-An intresing thing I found in here is in the Angr of challenge 11.1, the pseudocode of the string judgement shows " if str equals to 'receive message', then do fwrite Unrecognized choice ".
+An intresing thing I found in here is in the Angr of challenge 11.1, the pseudocode of the string judgement shows " if str equals to 'receive_message', then do fwrite 'Unrecognized choice'".
 But in IDA, it works correctly.
 ![Angr](https://littlesurii.github.io/imgs/pwn/pwn11.1_Angr.png)
 ![IDA](https://littlesurii.github.io/imgs/pwn/pwn11.1_IDA.png)
