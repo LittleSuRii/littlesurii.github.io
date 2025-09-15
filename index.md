@@ -26,3 +26,4 @@ layout: default
 
 1. [pwn.college - yellow belt](./CTFs/yellowbelt.md)
 2. [pwn.college - green belt](./CTFs/greenbelt.md)
+3. [OSCP+ - Exam Review](./CTFs/OSCP+_review.md)
