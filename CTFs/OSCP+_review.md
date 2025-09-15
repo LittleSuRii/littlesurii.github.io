@@ -60,7 +60,7 @@ Last modified:
 
 ## 备考可能会用到的经验
 1. 什么备考材料适合这个考试?  
-(LainList)[https://docs.google.com/spreadsheets/d/18weuz_Eeynr6sXFQ87Cd5F0slOj9Z6rt/edit?gid=487240997#gid=487240997]  
+[LainList](https://docs.google.com/spreadsheets/d/18weuz_Eeynr6sXFQ87Cd5F0slOj9Z6rt/edit?gid=487240997#gid=487240997)  
 我个人认为在HTB里学到的东西在考试上帮助我更多。它教会的东西不仅是在技术层面上的内容，而且还包括在考试层面上告诉你什么是奇怪的以及什么是可以利用的。  
 
 2. HTB里的靶机都要做吗?  
